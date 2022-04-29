@@ -17,6 +17,9 @@ void publishImuMessage(ros::Publisher& imu_pub, const IMUData& data);
 std::string port;
 int32_t baud;
 
+tf::Quaternion orientation_last;
+ros::Time measurement_time_last;
+
 int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "chip_imu_driver");
@@ -120,19 +123,18 @@ void publishImuMessage(ros::Publisher& imu_pub, const IMUData& data)
   tf::quaternionTFToMsg(orientation, imu.orientation);
   
   /* angular velocity */
-  // gyro velocity is set to 0. This can be calculated by comparing the diff in rotation over time. 
-  int16_t gx = 0;
-  int16_t gy = 0;
-  int16_t gz = 0;
+  tf::Quaternion orientation_diff = orientation * (orientation_last.inverse());
+  double measurement_time_diff = (measurement_time - measurement_time_last).toSec();
+  tf::Matrix3x3 mat(orientation_diff);
+  tfScalar yaw, pitch, roll;
+  mat.getEulerYPR(yaw, pitch, roll);
 
-  // convert to rad/sec (like acceleration data)
-  double gxf = gx * (4000.0/65536.0) * (M_PI/180.0) * 25.0;
-  double gyf = gy * (4000.0/65536.0) * (M_PI/180.0) * 25.0;
-  double gzf = gz * (4000.0/65536.0) * (M_PI/180.0) * 25.0;
-
-  imu.angular_velocity.x = gxf;
-  imu.angular_velocity.y = gyf;
-  imu.angular_velocity.z = gzf;
+  imu.angular_velocity.x = roll / measurement_time_diff;
+  imu.angular_velocity.y = pitch / measurement_time_diff;
+  imu.angular_velocity.z = yaw / measurement_time_diff;
 
   imu_pub.publish(imu);
+
+  measurement_time_last = measurement_time;
+  orientation_last = orientation;
 }

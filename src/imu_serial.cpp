@@ -180,8 +180,8 @@ using namespace imu_sensor;
         uint8_t msg_index = data.at(0);
  
         data_.yaw     = -(static_cast<int16_t>(static_cast<int16_t>(data.at(1)) | static_cast<int16_t>(data.at(2)) << 8) / 100.0);
-        data_.roll    = static_cast<int16_t>(static_cast<int16_t>(data.at(3)) | static_cast<int16_t>(data.at(4)) << 8) / 100.0;
-        data_.pitch   = static_cast<int16_t>(static_cast<int16_t>(data.at(5)) | static_cast<int16_t>(data.at(6)) << 8) / 100.0;
+        data_.roll    = -(static_cast<int16_t>(static_cast<int16_t>(data.at(3)) | static_cast<int16_t>(data.at(4)) << 8) / 100.0);
+        data_.pitch   = -(static_cast<int16_t>(static_cast<int16_t>(data.at(5)) | static_cast<int16_t>(data.at(6)) << 8) / 100.0);
 
         data_.x_acc_mg   = static_cast<int16_t>(data.at(7)) | static_cast<int16_t>(data.at(8)) << 8;
         data_.y_acc_mg   = static_cast<int16_t>(data.at(9)) | static_cast<int16_t>(data.at(10)) << 8;
@@ -189,7 +189,7 @@ using namespace imu_sensor;
 
         data_.x_acc = convertMgToMsSquared(data_.x_acc_mg);
         data_.y_acc = convertMgToMsSquared(data_.y_acc_mg);
-        data_.z_acc = -convertMgToMsSquared(data_.z_acc_mg);
+        data_.z_acc = convertMgToMsSquared(data_.z_acc_mg);
 
         has_new_msg_ = true;
         ROS_INFO("Index: %i. Yaw, degree: %.2f. Pitch: %.2f. Roll: %.2f. X acc., m/s^2: %.2f. Y acc.: %.2f. Z acc.: %.2f",
